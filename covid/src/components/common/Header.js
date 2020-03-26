@@ -11,7 +11,7 @@ const Header = (props) => {
       <Text style={textStyle}>{props.headerText}</Text>
       <Image
       style={logoStyle}
-      source={require('../img/LogoVerde.png')}
+      source={require('../img/covid.png')}
       />
       </View>
   );

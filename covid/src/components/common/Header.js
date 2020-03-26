@@ -9,11 +9,7 @@ const Header = (props) => {
   return (
     <View style={viewStyle}>
       <Text style={textStyle}>{props.headerText}</Text>
-      <Image
-      style={logoStyle}
-      source={require('../img/covid.png')}
-      />
-      </View>
+    </View>
   );
 };
 

@@ -20,7 +20,7 @@ const Input = ({
 
   return (
     <View style={[styles.inputContainer, validationStyles]}>
-      <Text>{label}</Text>
+      <Text style={styles.labelStyle}>{label}</Text>
       <TextInput
         secureTextEntry={secureTextEntry}
         placeholder={placeholder}
@@ -39,6 +39,12 @@ const Input = ({
 };
 
 const styles = StyleSheet.create({
+  labelStyle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    lineHeight: 23,
+    flex: 1
+  },
   inputStyle: {
     color: '#000',
     paddingRight: 5,

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, Alert } from 'react-native';
 import Parse from 'parse/react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Card, CardSection, Input, Button, Spinner, Header, DropInput } from './common';
@@ -12,29 +12,65 @@ class LoginForm extends Component {
     headerShown: false  //this will hide the header
   };
 
+  constructor(props) {
+    super(props);
+    //setting default state
+    this.state = {
+      edad: '',
+      sexo: 0,
+      tos: 0,
+      escalofrios: 0,
+      diarrea: 0,
+      garganta: 0,
+      malestarGeneral: 0,
+      dolorCabeza: 0,
+      fiebre: 0,
+      perdidaOlfato: 0,
+      dificultadRespirar: 0,
+      fatiga: 0,
+      viajadoRecientemente: 0,
+      contactoAreaInfectada: 0,
+      contactoPacientePositivo: 0
+    };
+  }
+
   componentDidMount() {
-    Parse.User.currentAsync().then((user) => {
-        console.log(user);
-        this.props.session(user);
-        });
+    // console.log('Iniciar');
   }
 
-  onEmailChange(text) {
-    this.props.emailChanged(text);
+  onAlertAccept() {
+    this.props.navigation.navigate('Maps');
   }
 
-  onPasswordChange(text) {
-    this.props.passwordChanged(text);
-  }
+  onContinuarPress() {
+    let puntaje = 0;
+    if (this.state.tos === 1) { puntaje += 1; }
+    if (this.state.escalofrios === 1) { puntaje += 1; }
+    if (this.state.diarrea === 1) { puntaje += 1; }
+    if (this.state.garganta === 1) { puntaje += 1; }
+    if (this.state.malestarGeneral === 1) { puntaje += 1; }
+    if (this.state.dolorCabeza === 1) { puntaje += 1; }
+    if (this.state.fiebre === 1) { puntaje += 1; }
+    if (this.state.perdidaOlfato === 1) { puntaje += 1; }
+    if (this.state.dificultadRespirar === 1) { puntaje += 2; }
+    if (this.state.fatiga === 1) { puntaje += 2; }
+    if (this.state.viajadoRecientemente === 1) { puntaje += 3; }
+    if (this.state.contactoAreaInfectada === 1) { puntaje += 3; }
+    if (this.state.contactoPacientePositivo === 1) { puntaje += 3; }
 
-  onLoginButtonPress() {
-    const { email, password } = this.props;
+    let recomendacion = '';
+    if (puntaje<=2) { recomendacion = 'Podría ser estrés, tomé sus precauciones y observe'; }
+    else if (puntaje<=5) { recomendacion = 'Hidrátese, conserve medidas de higiene, observe y reevalúe en 2 días'; }
+    else if (puntaje<=11) { recomendacion = 'Acuda a consulta con el médico'; }
+    else { recomendacion = 'Llame a los servicios para realizar prueba COVID-19'; }
 
-    this.props.loginUser({ email, password });
-  }
-
-  onSignupButtonPress() {
-    this.props.navigation.navigate('SignUp');
+    Alert.alert(
+      'Recomendación:',
+      recomendacion,
+      [{ text: 'Ok', onPress: () => this.onAlertAccept() }],
+      { cancelable: false }
+    );
+    //this.props.navigation.navigate('SignUp');
   }
 
   renderButton() {
@@ -43,7 +79,7 @@ class LoginForm extends Component {
     }
 
     return (
-      <Button onPress={this.onLoginButtonPress.bind(this)}>
+      <Button onPress={this.onContinuarPress.bind(this)}>
         Continuar
       </Button>
     );
@@ -63,25 +99,14 @@ class LoginForm extends Component {
   }
 
   render() {
-    const edad_data = [{ value: '0' }, { value: '1' }, { value: '2' }, { value: '3' }, { value: '4' }, { value: '5' }, { value: '6' }, { value: '7' }, { value: '8' }, { value: '9' },
-    { value: '10' }, { value: '11' }, { value: '12' }, { value: '13' }, { value: '14' }, { value: '15' }, { value: '16' }, { value: '17' }, { value: '18' }, { value: '19' },
-    { value: '20' }, { value: '21' }, { value: '22' }, { value: '23' }, { value: '24' }, { value: '25' }, { value: '26' }, { value: '27' }, { value: '28' }, { value: '29' },
-    { value: '30' }, { value: '31' }, { value: '32' }, { value: '33' }, { value: '34' }, { value: '35' }, { value: '36' }, { value: '37' }, { value: '38' }, { value: '39' },
-    { value: '40' }, { value: '41' }, { value: '42' }, { value: '43' }, { value: '44' }, { value: '45' }, { value: '46' }, { value: '47' }, { value: '48' }, { value: '49' },
-    { value: '50' }, { value: '51' }, { value: '52' }, { value: '53' }, { value: '54' }, { value: '55' }, { value: '56' }, { value: '57' }, { value: '58' }, { value: '59' },
-    { value: '60' }, { value: '61' }, { value: '62' }, { value: '63' }, { value: '64' }, { value: '65' }, { value: '66' }, { value: '67' }, { value: '68' }, { value: '69' },
-    { value: '70' }, { value: '71' }, { value: '72' }, { value: '73' }, { value: '74' }, { value: '75' }, { value: '76' }, { value: '77' }, { value: '78' }, { value: '79' },
-    { value: '80' }, { value: '81' }, { value: '82' }, { value: '83' }, { value: '84' }, { value: '85' }, { value: '86' }, { value: '87' }, { value: '88' }, { value: '89' },
-    { value: '90' }, { value: '91' }, { value: '92' }, { value: '93' }, { value: '94' }, { value: '95' }, { value: '96' }, { value: '97' }, { value: '98' }, { value: '99+' } ];
-
     const radio_sexo = [
       {label: 'Masculino', value: 0 },
       {label: 'Femenino', value: 1 }
     ];
 
     const radio_bool = [
-      {label: 'Sí', value: 0 },
-      {label: 'No', value: 1 }
+      {label: 'No', value: 0 },
+      {label: 'Sí', value: 1 }
     ];
 
     if (this.props.loggedIn) {
@@ -89,122 +114,268 @@ class LoginForm extends Component {
     }
     return (
       <KeyboardAwareScrollView>
-        <Header headerText="Cuestionario Inicial" />
+        <Header headerText="Pre-evaluación" />
 
         <CardSection>
-          <DropInput
-            label='Edad'
-            data={edad_data}
-            value={this.props.email}
-            onChangeText={this.onEmailChange.bind(this)}
-            placeholder='20'
+          <Input
+            label="Edad"
+            placeholder="20"
+            onChangeText={(text) => { this.setState({ edad: text })} }
+            value={this.state.edad}
+            keyboardType="numeric"
           />
         </CardSection>
 
         <CardSection>
-          <Text>Sexo:</Text>
+          <Text style={styles.labelStyle}>Sexo:</Text>
         </CardSection>
         <CardSection>
-
-          <RadioForm
-            radio_props={radio_sexo}
-            initial={0}
-            formHorizontal={true}
-            labelHorizontal={true}
-            buttonColor={'#2196f3'}
-            animation={true}
-            onPress={(value) => {this.setState({sexo:value})}}
-          />
-        </CardSection>
-
-        <CardSection>
-          <Text>¿Tiene fiebre?</Text>
-        </CardSection>
-        <CardSection>
-          <RadioForm
-            radio_props={radio_bool}
-            initial={0}
-            formHorizontal={true}
-            labelHorizontal={true}
-            buttonColor={'#2196f3'}
-            animation={true}
-            onPress={(value) => {this.setState({sexo1:value})}}
-          />
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_sexo}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({sexo: value})}}
+            />
+          </View>
+          <View style={styles.container}/>
         </CardSection>
 
         <CardSection>
-          <Text>¿Tiene tos?</Text>
+          <Text style={styles.labelStyle}>¿Tienes tos?</Text>
         </CardSection>
         <CardSection>
-          <RadioForm
-            radio_props={radio_bool}
-            initial={0}
-            formHorizontal={true}
-            labelHorizontal={true}
-            buttonColor={'#2196f3'}
-            animation={true}
-            onPress={(value) => {this.setState({value:value})}}
-          />
-        </CardSection>
-
-        <CardSection>
-          <Text>¿Tiene dificultad para respirar?</Text>
-        </CardSection>
-        <CardSection>
-          <RadioForm
-            radio_props={radio_bool}
-            initial={0}
-            formHorizontal={true}
-            labelHorizontal={true}
-            buttonColor={'#2196f3'}
-            animation={true}
-            onPress={(value) => {this.setState({value:value})}}
-          />
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({tos: value})}}
+            />
+          </View>
+          <View style={styles.container}/>
         </CardSection>
 
         <CardSection>
-          <Text>¿Tiene congestión nasal?</Text>
+          <Text style={styles.labelStyle}>¿Tienes escalofríos?</Text>
         </CardSection>
         <CardSection>
-          <RadioForm
-            radio_props={radio_bool}
-            initial={0}
-            formHorizontal={true}
-            labelHorizontal={true}
-            buttonColor={'#2196f3'}
-            animation={true}
-            onPress={(value) => {this.setState({value:value})}}
-          />
-        </CardSection>
-
-        <CardSection>
-          <Text>¿Tiene dolor de garganta?</Text>
-        </CardSection>
-        <CardSection>
-          <RadioForm
-            radio_props={radio_bool}
-            initial={0}
-            formHorizontal={true}
-            labelHorizontal={true}
-            buttonColor={'#2196f3'}
-            animation={true}
-            onPress={(value) => {this.setState({value:value})}}
-          />
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({escalofrios:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
         </CardSection>
 
         <CardSection>
-          <Text>¿Tiene diarrea?</Text>
+          <Text style={styles.labelStyle}>En este momento o en días previos, ¿has tenido diarrea?</Text>
         </CardSection>
         <CardSection>
-          <RadioForm
-            radio_props={radio_bool}
-            initial={0}
-            formHorizontal={true}
-            labelHorizontal={true}
-            buttonColor={'#2196f3'}
-            animation={true}
-            onPress={(value) => {this.setState({value:value})}}
-          />
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({diarrea:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Tienes dolor de garganta?</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({garganta: value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Tiene dolor de cuerpo o malestar general?</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({malestarGeneral:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Estás presentando dolores de cabeza?</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({dolorCabeza:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Has tenido fiebre? (Más de 37.8 °C)</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({fiebre:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Has perdido el olfato?</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({perdidaOlfato:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Estas teniendo dificultad para respirar? (Como si no entrara aire al pecho)</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({dificultadRespirar:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Estas experimentando fatiga?</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({fatiga:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Has viajado en los últimos 14 días?</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({viajadoRecientemente:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Has viajado o estado en un área infectada por COVID-19?</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({contactoAreaInfectada:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
+        </CardSection>
+
+        <CardSection>
+          <Text style={styles.labelStyle}>¿Has estado en contacto directo o cuidando algún paciente positivo a COVID-19?</Text>
+        </CardSection>
+        <CardSection>
+          <View style={styles.container}>
+            <RadioForm
+              radio_props={radio_bool}
+              initial={0}
+              formHorizontal={true}
+              labelHorizontal={false}
+              buttonColor={'#2196f3'}
+              animation={true}
+              onPress={(value) => {this.setState({contactoPacientePositivo:value})}}
+            />
+          </View>
+          <View style={styles.container}/>
         </CardSection>
 
         {this.renderError()}
@@ -219,6 +390,17 @@ class LoginForm extends Component {
 }
 
 const styles = {
+  labelStyle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    lineHeight: 23,
+    flex: 1
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   errorTextStyle: {
     fontSize: 20,
     alignSelf: 'center',

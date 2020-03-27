@@ -1,4 +1,3 @@
-
 import { Dimensions } from 'react-native';
 import {
   createSwitchNavigator,
@@ -11,6 +10,7 @@ import { createDrawerNavigator } from 'react-navigation-drawer';
 import LoginForm from './LoginForm';
 import Home from './Home';
 import SideMenu from '../SideMenu/SideMenu';
+import Maps from './mapas/Maps';
 
 import { useScreens } from 'react-native-screens';
 useScreens();
@@ -31,7 +31,8 @@ const AppStack = createStackNavigator(
 
 const LoginStack = createStackNavigator(
   {
-    Login: LoginForm
+    Login: LoginForm,
+    Maps: Maps
   },
   {
     defaultNavigationOptions: {

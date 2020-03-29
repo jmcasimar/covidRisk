@@ -1,6 +1,6 @@
 import firebase from 'react-native-firebase';
 import React, { Component } from 'react';
-import {StatusBar, StyleSheet, View } from 'react-native';
+import {StatusBar, StyleSheet, View, Text } from 'react-native';
 import { getUniqueId, getManufacturer, getMacAddress } from 'react-native-device-info';
 import GetLocation from 'react-native-get-location';
 import MapView, { Marker } from 'react-native-maps';
@@ -173,13 +173,13 @@ if((cloudLocArray && cloudLocArray !== []) && (localLocArray && localLocArray !=
 else if(!cloudLocArray || cloudLocArray === [] ) { locationArray = localLocArray }
 else if(!localLocArray || localLocArray === []) { locationArray = cloudLocArray }
 console.log('locatArray',locationArray.length)
-  return locationArray;
+  return [locationArray, cloudLocArray, localLocArray];
 }
 
 upload() {
   const { macaddress } = this.state
 
-  const locationArray = this.joinLocationArrays();
+  const [locationArray, cloudLocArray, localLocArray] = this.joinLocationArrays();
 
   const ref = firebase.firestore().collection('ubicaciones').doc(macaddress);
 
@@ -214,7 +214,7 @@ render() {
 
 const { location } = this.state;
 
-const locationArray = this.joinLocationArrays();
+const [locationArray, cloudLocArray, localLocArray] = this.joinLocationArrays();
 
 if (location !== '') {
 return (
@@ -238,6 +238,9 @@ return (
           <View>
           <Button onPress={() => this.upload()}>
           Cargar info
+          Ubicaciones locales: {localLocArray.length}
+          Ubicaciones en la nube: {cloudLocArray.length}   
+          Ubicaciones mostradas: {locationArray.length}
           </Button>
           </View>
        </View>

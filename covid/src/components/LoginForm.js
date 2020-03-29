@@ -37,9 +37,31 @@ class LoginForm extends Component {
     };
   }
 
+
+
   componentDidMount() {
+    aceptarPrivacidad = async () => {
+      await AsyncStorage.setItem('avisoPrivacidad', 'si');
+    }
+
     getData = async () => {
     try {
+      const privacidad = `Con la finalidad de respetar la privacidad de todos los usuarios, la aplicación únicamente guarda la información recolectada dentro de su dispósitivo.
+      Sin embargo, si usted así lo decide puede compartir esa información con nuestros servidores con la finalidad de apoyar al resto de la comunidad que cuente con la aplicación a evaluar el estado actual de riesgo de exposición al COVID-19 en su comunidad.
+      La información recolectada es estrictamente anónima y puede ser de utilidad para las instituciones académicas y gubernamentales a recolectar información que les ayuden a tomar mejores decisiones durante el desarrollo de la pandemia.
+      Nunca se subirá la información de manera automática, siempre la acción será activada por el usuario y se le pedirá confirmación antes de subirla.
+      El código fuente de la applicación es abierto y puede ser encontrado en la siguiente dirección: https://github.com/jmcasimar/covidRisk/. Cualquier persona que desee colaborar ya sea aportando ideas o el desarrollo de la app se puede contactar a los siguientes correos: jmcasimar@healtech.com.mx y klavierema@healtech.com.mx`;
+
+      let avisoPrivacidad = await AsyncStorage.getItem('avisoPrivacidad');
+      if(avisoPrivacidad === null) {
+        Alert.alert(
+          'Aviso de Privacidad:',
+          privacidad,
+          [{ text: 'Ok', onPress: () => aceptarPrivacidad() }],
+          { cancelable: false }
+        );
+      }
+
       let tos = await AsyncStorage.getItem('tos')
       if(tos === null) { tos = 'no'; }
 
@@ -225,6 +247,7 @@ class LoginForm extends Component {
 
   render() {
     console.log(this.state);
+
     const { requestAgain, edad, sexo, tos, escalofrios, diarrea, garganta,
     malestarGeneral, dolorCabeza, fiebre, perdidaOlfato, dificultadRespirar,
     fatiga, viajadoRecientemente, contactoAreaInfectada, contactoPacientePositivo } = this.state;

@@ -32,7 +32,8 @@ class LoginForm extends Component {
       fatiga: '',
       viajadoRecientemente: '',
       contactoAreaInfectada: '',
-      contactoPacientePositivo: ''
+      contactoPacientePositivo: '',
+      requestAgain: false
     };
   }
 
@@ -101,8 +102,16 @@ class LoginForm extends Component {
     getData();
   }
 
-  onAlertAccept() {
+  goToMaps() {
     this.props.navigation.navigate('Maps');
+  }
+
+  onRequestAgain() {
+    this.setState({ requestAgain: true });
+  }
+
+  showQr(){
+    this.setState({ requestAgain: false });
   }
 
   onContinuarPress() {
@@ -150,6 +159,7 @@ class LoginForm extends Component {
         if (this.state.contactoPacientePositivo){ await AsyncStorage.setItem('contactoPacientePositivo', 'si'); }
         else { await AsyncStorage.setItem('contactoPacientePositivo', 'no'); }
 
+        this.setState({ requestAgain: true });
         console.log('Encuesta Guardada');
 
       } catch (e) {
@@ -159,19 +169,19 @@ class LoginForm extends Component {
 
     storeData();
     let puntaje = 0;
-    if (this.state.tos === 1) { puntaje += 1; }
-    if (this.state.escalofrios === 1) { puntaje += 1; }
-    if (this.state.diarrea === 1) { puntaje += 1; }
-    if (this.state.garganta === 1) { puntaje += 1; }
-    if (this.state.malestarGeneral === 1) { puntaje += 1; }
-    if (this.state.dolorCabeza === 1) { puntaje += 1; }
-    if (this.state.fiebre === 1) { puntaje += 1; }
-    if (this.state.perdidaOlfato === 1) { puntaje += 1; }
-    if (this.state.dificultadRespirar === 1) { puntaje += 2; }
-    if (this.state.fatiga === 1) { puntaje += 2; }
-    if (this.state.viajadoRecientemente === 1) { puntaje += 3; }
-    if (this.state.contactoAreaInfectada === 1) { puntaje += 3; }
-    if (this.state.contactoPacientePositivo === 1) { puntaje += 3; }
+    if (this.state.tos === 'si') { puntaje += 1; }
+    if (this.state.escalofrios === 'si') { puntaje += 1; }
+    if (this.state.diarrea === 'si') { puntaje += 1; }
+    if (this.state.garganta === 'si') { puntaje += 1; }
+    if (this.state.malestarGeneral === 'si') { puntaje += 1; }
+    if (this.state.dolorCabeza === 'si') { puntaje += 1; }
+    if (this.state.fiebre === 'si') { puntaje += 1; }
+    if (this.state.perdidaOlfato === 'si') { puntaje += 1; }
+    if (this.state.dificultadRespirar === 'si') { puntaje += 2; }
+    if (this.state.fatiga === 'si') { puntaje += 2; }
+    if (this.state.viajadoRecientemente === 'si') { puntaje += 3; }
+    if (this.state.contactoAreaInfectada === 'si') { puntaje += 3; }
+    if (this.state.contactoPacientePositivo === 'si') { puntaje += 3; }
 
     let recomendacion = '';
     if (puntaje<=2) { recomendacion = 'Podría ser estrés, tomé sus precauciones y observe'; }
@@ -182,7 +192,7 @@ class LoginForm extends Component {
     Alert.alert(
       'Recomendación:',
       recomendacion,
-      [{ text: 'Ok', onPress: () => this.onAlertAccept() }],
+      [{ text: 'Ok', onPress: () => this.showQr() }],
       { cancelable: false }
     );
     //this.props.navigation.navigate('SignUp');
@@ -214,13 +224,14 @@ class LoginForm extends Component {
   }
 
   render() {
-    const { edad, sexo, tos, escalofrios, diarrea, garganta,
+    console.log(this.state);
+    const { requestAgain, edad, sexo, tos, escalofrios, diarrea, garganta,
     malestarGeneral, dolorCabeza, fiebre, perdidaOlfato, dificultadRespirar,
     fatiga, viajadoRecientemente, contactoAreaInfectada, contactoPacientePositivo } = this.state;
 
-    if(tos!=='' && escalofrios!=='' && diarrea!=='' && garganta!=='' &&
+    if( requestAgain===false && tos!=='' && escalofrios!=='' && diarrea!=='' && garganta!=='' &&
       malestarGeneral!=='' && dolorCabeza!=='' && fiebre!=='' && perdidaOlfato!=='' && dificultadRespirar!=='' &&
-      fatiga!=='' && viajadoRecientemente!=='' && contactoAreaInfectada!=='' && contactoPacientePositivo!==''){
+      fatiga!=='' && viajadoRecientemente!=='' && contactoAreaInfectada!=='' && contactoPacientePositivo!=='' ){
         let qrInfo = 'tos:';
         qrInfo += this.state.tos;
         qrInfo += ',escalofrios:';
@@ -251,12 +262,23 @@ class LoginForm extends Component {
       return (
         <Card>
           <CardSection>
+            <Text style={{color: 'white'}}>*************</Text>
              <View style={styles.qrStyle}>
                <QRCode
                  value={qrInfo}
                  size={200}
                />
              </View>
+          </CardSection>
+          <CardSection>
+            <Button onPress={this.onRequestAgain.bind(this)}>
+              Contestar nuevamente la encuesta
+            </Button>
+          </CardSection>
+          <CardSection>
+            <Button onPress={this.goToMaps.bind(this)}>
+              Ir a mapa
+            </Button>
           </CardSection>
         </Card>
       );
@@ -274,6 +296,49 @@ class LoginForm extends Component {
     if (this.props.loggedIn) {
       this.props.navigation.navigate('Stack');
     }
+
+    let sexo0 = 0;
+    if (sexo==='Masculino') { sexo0 = 1; }
+
+    let tos0 = 0;
+    if (tos==='si') { tos0 = 1; }
+
+    let escalofrios0 = 0;
+    if (escalofrios==='si') { escalofrios0 = 1; }
+
+    let diarrea0 = 0;
+    if (diarrea==='si') { diarrea0 = 1; }
+
+    let garganta0 = 0;
+    if (garganta==='si') { garganta0 = 1; }
+
+    let malestarGeneral0 = 0;
+    if (malestarGeneral==='si') { malestarGeneral0 = 1; }
+
+    let dolorCabeza0 = 0;
+    if (dolorCabeza==='si') { dolorCabeza0 = 1; }
+
+    let fiebre0 = 0;
+    if (fiebre==='si') { fiebre0 = 1; }
+
+    let perdidaOlfato0 = 0;
+    if (perdidaOlfato==='si') { perdidaOlfato0 = 1; }
+
+    let dificultadRespirar0 = 0;
+    if (dificultadRespirar==='si') { dificultadRespirar0 = 1; }
+
+    let fatiga0 = 0;
+    if (fatiga==='si') { fatiga0 = 1; }
+
+    let viajadoRecientemente0 = 0;
+    if (viajadoRecientemente==='si') { viajadoRecientemente0 = 1; }
+
+    let contactoAreaInfectada0 = 0;
+    if (contactoAreaInfectada==='si') { contactoAreaInfectada0 = 1; }
+
+    let contactoPacientePositivo0 = 0;
+    if (contactoPacientePositivo==='si') { contactoPacientePositivo0 = 1; }
+
     return (
       <KeyboardAwareScrollView>
         <Header headerText="Pre-evaluación" />
@@ -295,12 +360,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_sexo}
-              initial={0}
+              initial={sexo0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({sexo: value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({sexo: 'Masculino'});
+                } else { this.setState({sexo: 'Femenino'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -313,12 +381,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={tos0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({tos: value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({tos: 'si'});
+                } else { this.setState({tos: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -331,12 +402,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={escalofrios0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({escalofrios:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({escalofrios: 'si'});
+                } else { this.setState({escalofrios: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -349,12 +423,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={diarrea0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({diarrea:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({diarrea: 'si'});
+                } else { this.setState({diarrea: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -367,12 +444,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={garganta0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({garganta: value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({garganta: 'si'});
+                } else { this.setState({garganta: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -385,12 +465,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={malestarGeneral0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({malestarGeneral:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({malestarGeneral: 'si'});
+                } else { this.setState({malestarGeneral: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -403,12 +486,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={dolorCabeza0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({dolorCabeza:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({dolorCabeza: 'si'});
+                } else { this.setState({dolorCabeza: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -421,12 +507,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={fiebre0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({fiebre:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({fiebre: 'si'});
+                } else { this.setState({fiebre: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -439,12 +528,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={perdidaOlfato0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({perdidaOlfato:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({perdidaOlfato: 'si'});
+                } else { this.setState({perdidaOlfato: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -457,12 +549,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={dificultadRespirar0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({dificultadRespirar:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({dificultadRespirar: 'si'});
+                } else { this.setState({dificultadRespirar: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -475,12 +570,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={fatiga0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({fatiga:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({fatiga: 'si'});
+                } else { this.setState({fatiga: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -493,12 +591,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={viajadoRecientemente0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({viajadoRecientemente:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({viajadoRecientemente: 'si'});
+                } else { this.setState({viajadoRecientemente: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -511,12 +612,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={contactoAreaInfectada0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({contactoAreaInfectada:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({contactoAreaInfectada: 'si'});
+                } else { this.setState({contactoAreaInfectada: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>
@@ -529,12 +633,15 @@ class LoginForm extends Component {
           <View style={styles.container}>
             <RadioForm
               radio_props={radio_bool}
-              initial={0}
+              initial={contactoPacientePositivo0}
               formHorizontal={true}
               labelHorizontal={false}
               buttonColor={'#2196f3'}
-              animation={true}
-              onPress={(value) => {this.setState({contactoPacientePositivo:value})}}
+              onPress={(value) => {
+                if(value===1) {
+                  this.setState({contactoPacientePositivo: 'si'});
+                } else { this.setState({contactoPacientePositivo: 'no'}); }
+              }}
             />
           </View>
           <View style={styles.container}/>

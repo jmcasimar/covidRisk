@@ -6,6 +6,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Card, CardSection, Input, Button, Spinner, Header, DropInput } from './common';
 import { emailChanged, passwordChanged, loginUser, session } from '../actions';
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
+import AsyncStorage from '@react-native-community/async-storage';
+import QRCode from 'react-native-qrcode-svg';
 
 class LoginForm extends Component {
   static navigationOptions = {
@@ -17,25 +19,86 @@ class LoginForm extends Component {
     //setting default state
     this.state = {
       edad: '',
-      sexo: 0,
-      tos: 0,
-      escalofrios: 0,
-      diarrea: 0,
-      garganta: 0,
-      malestarGeneral: 0,
-      dolorCabeza: 0,
-      fiebre: 0,
-      perdidaOlfato: 0,
-      dificultadRespirar: 0,
-      fatiga: 0,
-      viajadoRecientemente: 0,
-      contactoAreaInfectada: 0,
-      contactoPacientePositivo: 0
+      sexo: '',
+      tos: '',
+      escalofrios: '',
+      diarrea: '',
+      garganta: '',
+      malestarGeneral: '',
+      dolorCabeza: '',
+      fiebre: '',
+      perdidaOlfato: '',
+      dificultadRespirar: '',
+      fatiga: '',
+      viajadoRecientemente: '',
+      contactoAreaInfectada: '',
+      contactoPacientePositivo: ''
     };
   }
 
   componentDidMount() {
-    // console.log('Iniciar');
+    getData = async () => {
+    try {
+      let tos = await AsyncStorage.getItem('tos')
+      if(tos === null) { tos = 'no'; }
+
+      let escalofrios = await AsyncStorage.getItem('escalofrios')
+      if(escalofrios === null) { escalofrios = 'no'; }
+
+      let diarrea = await AsyncStorage.getItem('diarrea')
+      if(diarrea === null) { diarrea = 'no'; }
+
+      let garganta = await AsyncStorage.getItem('garganta')
+      if(garganta === null) { garganta = 'no'; }
+
+      let malestarGeneral = await AsyncStorage.getItem('malestarGeneral')
+      if(malestarGeneral === null) { malestarGeneral = 'no'; }
+
+      let dolorCabeza = await AsyncStorage.getItem('dolorCabeza')
+      if(dolorCabeza === null) { dolorCabeza = 'no'; }
+
+      let fiebre = await AsyncStorage.getItem('fiebre')
+      if(fiebre === null) { fiebre = 'no'; }
+
+      let perdidaOlfato = await AsyncStorage.getItem('perdidaOlfato')
+      if(perdidaOlfato === null) { perdidaOlfato = 'no'; }
+
+      let dificultadRespirar = await AsyncStorage.getItem('dificultadRespirar')
+      if(dificultadRespirar === null) { dificultadRespirar = 'no'; }
+
+      let fatiga = await AsyncStorage.getItem('fatiga')
+      if(fatiga === null) { fatiga = 'no'; }
+
+      let viajadoRecientemente = await AsyncStorage.getItem('viajadoRecientemente')
+      if(viajadoRecientemente === null) { viajadoRecientemente = 'no'; }
+
+      let contactoAreaInfectada = await AsyncStorage.getItem('contactoAreaInfectada')
+      if(contactoAreaInfectada === null) { contactoAreaInfectada = 'no'; }
+
+      let contactoPacientePositivo = await AsyncStorage.getItem('contactoPacientePositivo')
+      if(contactoPacientePositivo === null) { contactoPacientePositivo = 'no'; }
+
+      this.setState({
+        tos,
+        escalofrios,
+        diarrea,
+        garganta,
+        malestarGeneral,
+        dolorCabeza,
+        fiebre,
+        perdidaOlfato,
+        dificultadRespirar,
+        fatiga,
+        viajadoRecientemente,
+        contactoAreaInfectada,
+        contactoPacientePositivo
+      });
+      console.log('AsyncStorage info obtenida', this.setState());
+    } catch(e) {
+      console.log('AsyncStorage Read error:', e);
+      }
+    }
+    getData();
   }
 
   onAlertAccept() {
@@ -43,6 +106,58 @@ class LoginForm extends Component {
   }
 
   onContinuarPress() {
+    storeData = async () => {
+      try {
+        if (this.state.tos){ await AsyncStorage.setItem('tos', 'si'); }
+        else { await AsyncStorage.setItem('tos', 'no'); }
+
+        if (this.state.escalofrios){ await AsyncStorage.setItem('escalofrios', 'si'); }
+        else { await AsyncStorage.setItem('escalofrios', 'no'); }
+
+        if (this.state.diarrea){ await AsyncStorage.setItem('diarrea', 'si'); }
+        else { await AsyncStorage.setItem('diarrea', 'no'); }
+
+        if (this.state.garganta){ await AsyncStorage.setItem('garganta', 'si'); }
+        else { await AsyncStorage.setItem('garganta', 'no'); }
+
+        if (this.state.malestarGeneral){ await AsyncStorage.setItem('malestarGeneral', 'si'); }
+        else { await AsyncStorage.setItem('malestarGeneral', 'no'); }
+
+        if (this.state.dolorCabeza){ await AsyncStorage.setItem('dolorCabeza', 'si'); }
+        else { await AsyncStorage.setItem('dolorCabeza', 'no'); }
+
+        if (this.state.malestarGeneral){ await AsyncStorage.setItem('malestarGeneral', 'si'); }
+        else { await AsyncStorage.setItem('malestarGeneral', 'no'); }
+
+        if (this.state.fiebre){ await AsyncStorage.setItem('fiebre', 'si'); }
+        else { await AsyncStorage.setItem('fiebre', 'no'); }
+
+        if (this.state.perdidaOlfato){ await AsyncStorage.setItem('perdidaOlfato', 'si'); }
+        else { await AsyncStorage.setItem('perdidaOlfato', 'no'); }
+
+        if (this.state.dificultadRespirar){ await AsyncStorage.setItem('dificultadRespirar', 'si'); }
+        else { await AsyncStorage.setItem('dificultadRespirar', 'no'); }
+
+        if (this.state.fatiga){ await AsyncStorage.setItem('fatiga', 'si'); }
+        else { await AsyncStorage.setItem('fatiga', 'no'); }
+
+        if (this.state.viajadoRecientemente){ await AsyncStorage.setItem('viajadoRecientemente', 'si'); }
+        else { await AsyncStorage.setItem('viajadoRecientemente', 'no'); }
+
+        if (this.state.contactoAreaInfectada){ await AsyncStorage.setItem('contactoAreaInfectada', 'si'); }
+        else { await AsyncStorage.setItem('contactoAreaInfectada', 'no'); }
+
+        if (this.state.contactoPacientePositivo){ await AsyncStorage.setItem('contactoPacientePositivo', 'si'); }
+        else { await AsyncStorage.setItem('contactoPacientePositivo', 'no'); }
+
+        console.log('Encuesta Guardada');
+
+      } catch (e) {
+        console.log('AsyncStorage Error:', e);
+      }
+    }
+
+    storeData();
     let puntaje = 0;
     if (this.state.tos === 1) { puntaje += 1; }
     if (this.state.escalofrios === 1) { puntaje += 1; }
@@ -99,6 +214,53 @@ class LoginForm extends Component {
   }
 
   render() {
+    const { edad, sexo, tos, escalofrios, diarrea, garganta,
+    malestarGeneral, dolorCabeza, fiebre, perdidaOlfato, dificultadRespirar,
+    fatiga, viajadoRecientemente, contactoAreaInfectada, contactoPacientePositivo } = this.state;
+
+    if(tos!=='' && escalofrios!=='' && diarrea!=='' && garganta!=='' &&
+      malestarGeneral!=='' && dolorCabeza!=='' && fiebre!=='' && perdidaOlfato!=='' && dificultadRespirar!=='' &&
+      fatiga!=='' && viajadoRecientemente!=='' && contactoAreaInfectada!=='' && contactoPacientePositivo!==''){
+        let qrInfo = 'tos:';
+        qrInfo += this.state.tos;
+        qrInfo += ',escalofrios:';
+        qrInfo += this.state.escalofrios;
+        qrInfo += ',diarrea:';
+        qrInfo += this.state.diarrea;
+        qrInfo += ',garganta:';
+        qrInfo += this.state.garganta;
+        qrInfo += ',malestarGeneral:';
+        qrInfo += this.state.malestarGeneral;
+        qrInfo += ',dolorCabeza:';
+        qrInfo += this.state.dolorCabeza;
+        qrInfo += ',fiebre:';
+        qrInfo += this.state.fiebre;
+        qrInfo += ',perdidaOlfato:';
+        qrInfo += this.state.perdidaOlfato;
+        qrInfo += ',dificultadRespirar:';
+        qrInfo += this.state.dificultadRespirar;
+        qrInfo += ',fatiga:';
+        qrInfo += this.state.fatiga;
+        qrInfo += ',viajadoRecientemente:';
+        qrInfo += this.state.viajadoRecientemente;
+        qrInfo += ',contactoAreaInfectada:';
+        qrInfo += this.state.contactoAreaInfectada;
+        qrInfo += ',contactoPacientePositivo:';
+        qrInfo += this.state.contactoPacientePositivo;
+
+      return (
+        <Card>
+          <CardSection>
+             <View style={styles.qrStyle}>
+               <QRCode
+                 value={qrInfo}
+                 size={200}
+               />
+             </View>
+          </CardSection>
+        </Card>
+      );
+    }
     const radio_sexo = [
       {label: 'Masculino', value: 0 },
       {label: 'Femenino', value: 1 }
@@ -405,6 +567,10 @@ const styles = {
     fontSize: 20,
     alignSelf: 'center',
     color: 'white'
+  },
+  qrStyle: {
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 };
 

@@ -5,11 +5,11 @@ import { getUniqueId, getManufacturer, getMacAddress } from 'react-native-device
 import GetLocation from 'react-native-get-location';
 import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-community/async-storage';
-import Parse from 'parse/react-native';
+import QRCode from 'react-native-qrcode-svg';
+import { Card, CardSection } from '../common';
 
 const styles = StyleSheet.create({
  container: {
-   ...StyleSheet.absoluteFillObject,
    height: 400,
    width: 400,
    justifyContent: 'flex-end',
@@ -18,6 +18,10 @@ const styles = StyleSheet.create({
  map: {
    ...StyleSheet.absoluteFillObject,
  },
+ qrStyle: {
+   justifyContent: 'center',
+   alignItems: 'center'
+ }
 });
 
 export default class Maps extends Component {
@@ -26,9 +30,9 @@ export default class Maps extends Component {
       super();
 
       this.state={
-    location: '',
-    locationArray: []
-    }
+        location: '',
+        locationArray: []
+      }
   }
 
   componentDidMount() {
@@ -56,7 +60,7 @@ export default class Maps extends Component {
     location.latitudeDelta = 0.015;
     location.longitudeDelta = 0.0121;
 
-    this.setState({location})
+    this.setState({location});
   })
   .catch(error => {
       const { code, message } = error;
@@ -73,6 +77,12 @@ cargarUbicaciones(address) {
         const locationArray = doc.data().locationArray;
         console.log('queryarray', locationArray)
         this.setState({locationArray})
+        const ref1 = firebase.firestore().collection('ubicaciones').where('riesgo', '==', 60);
+        ref1.get().then((doc1) => {
+          console.log(doc1, 'DOC TEST');
+        }).catch(function(error) {
+          console.log('PTM2', error);
+        });
     } else {
         // doc.data() will be undefined in this case
         console.log("No such document!");
@@ -182,30 +192,68 @@ render() {
   ];
 
 const { location } = this.state;
+
 if (location !== '') {
+  let qrInfo = 'tos:';
+  qrInfo += this.state.tos;
+  qrInfo += ',escalofrios:';
+  qrInfo += this.state.escalofrios;
+  qrInfo += ',diarrea:';
+  qrInfo += this.state.diarrea;
+  qrInfo += ',garganta:';
+  qrInfo += this.state.garganta;
+  qrInfo += ',malestarGeneral:';
+  qrInfo += this.state.malestarGeneral;
+  qrInfo += ',dolorCabeza:';
+  qrInfo += this.state.dolorCabeza;
+  qrInfo += ',fiebre:';
+  qrInfo += this.state.fiebre;
+  qrInfo += ',perdidaOlfato:';
+  qrInfo += this.state.perdidaOlfato;
+  qrInfo += ',dificultadRespirar:';
+  qrInfo += this.state.dificultadRespirar;
+  qrInfo += ',fatiga:';
+  qrInfo += this.state.fatiga;
+  qrInfo += ',viajadoRecientemente:';
+  qrInfo += this.state.viajadoRecientemente;
+  qrInfo += ',contactoAreaInfectada:';
+  qrInfo += this.state.contactoAreaInfectada;
+  qrInfo += ',contactoPacientePositivo:';
+  qrInfo += this.state.contactoPacientePositivo;
+
 return (
-       <View style={styles.container}>
-         <MapView
-           style={styles.map}
-           region={location}
-         >
-         {this.state.locationArray.map(marker => (
-         <Marker
-         coordinate={{
-           latitude: location.latitude,
-           longitude: location.longitude
-         }}
+  <View>
+    <CardSection>
+       <View style={styles.qrStyle}>
+         <QRCode
+           value={qrInfo}
+           size={200}
          />
-       ))}
-       <MapView.Heatmap points={[{latitude: location.latitude, longitude: location.longitude, weight: 100},
-                                 {latitude: location.latitude+0.1, longitude: location.longitude+.1, weight: 100}]}
-                         opacity={1}
-                         radius={20}
-                         maxIntensity={100}
-                         gradientSmoothing={10}
-                         heatmapMode={"POINTS_DENSITY"}/>
-          </MapView>
        </View>
+    </CardSection>
+    <View style={styles.container}>
+       <MapView
+         style={styles.map}
+         region={location}
+       >
+       {this.state.locationArray.map(marker => (
+       <Marker
+       coordinate={{
+         latitude: location.latitude,
+         longitude: location.longitude
+       }}
+       />
+     ))}
+     <MapView.Heatmap points={[{latitude: location.latitude, longitude: location.longitude, weight: 100},
+                               {latitude: location.latitude+0.1, longitude: location.longitude+.1, weight: 100}]}
+                       opacity={1}
+                       radius={20}
+                       maxIntensity={100}
+                       gradientSmoothing={10}
+                       heatmapMode={"POINTS_DENSITY"}/>
+        </MapView>
+    </View>
+  </View>
     );
   }
   return (

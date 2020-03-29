@@ -144,6 +144,7 @@ if (false) {
 }
 
 render() {
+  let numLoc = 0;
 const { location } = this.state;
 if (location !== '') {
 return (
@@ -154,7 +155,7 @@ return (
          >
          {this.state.locationArray.map(marker => {
            console.log('marker1', marker)
-           if (marker) {
+           if (marker && marker !== NaN) {
              return (
     <Marker
     coordinate={{

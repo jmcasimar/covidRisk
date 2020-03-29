@@ -6,6 +6,8 @@ import GetLocation from 'react-native-get-location';
 import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-community/async-storage';
 import Parse from 'parse/react-native';
+import { Card, CardSection, Input, Button, Spinner, Header, DropInput } from './../common';
+
 
     const styles = StyleSheet.create({
      container: {
@@ -51,7 +53,6 @@ export default class Maps extends Component {
 });
     this.interval = setInterval(() => this.tick(), 1000);
     this.interval2 = setInterval(() => this.tock(), 5000);
-    this.interval3 = setInterval(() => this.upload(), 10000);
     GetLocation.getCurrentPosition({
     enableHighAccuracy: true,
     timeout: 15000,
@@ -70,13 +71,16 @@ export default class Maps extends Component {
 }
 
 cargarUbicaciones(address) {
+
+  this.cargar('locationArray', 'array');
   const ref = firebase.firestore().collection('ubicaciones').doc(address);
 
   ref.get().then((doc) => {
     if (doc.exists) {
-        const locationArray = doc.data().locationArray;
-        console.log('queryarray', locationArray)
-        this.setState({locationArray})
+        const cloudArray = doc.data().locationArray;
+        locationArray = [...cloudArray, ...this.state.locationArray];
+        this.setState({ locationArray })
+
     } else {
         // doc.data() will be undefined in this case
         console.log("No such document!");
@@ -84,7 +88,6 @@ cargarUbicaciones(address) {
 }).catch(function(error) {
     console.log("Error getting document:", error);
 });
-
 }
 
 
@@ -103,15 +106,59 @@ tick() {
 tock() {
   let {locationArray, location} = this.state;
   if(Array.isArray(locationArray)) {
-
-    locationArray.push(location)
+      if (location && location !== NaN) {
+      locationArray.push(location)
+    }
   } else {
   locationArray = new Array()
   locationArray.push(location)
 }
-
+this.guardar('locationArray',locationArray, 'array')
 this.setState({locationArray});
+}
 
+guardar = async(name, value, type) => {
+  let object = value;
+  if (type === 'array') {object = JSON.stringify(value)}
+  try {
+  await AsyncStorage.setItem(`@${name}`, object);
+} catch (error) {
+  console.log('Error')
+} finally {
+  console.log(`Guardado ${type} ${name} ${object.length}`)
+}
+}
+
+cargar = async(name, type) => {
+  console.log('cargando')
+try {
+  const myArray = await AsyncStorage.getItem(`@${name}`);
+  console.log('leido', myArray)
+  if (myArray !== null) {
+    let object = []
+    let newArray = myArray;
+    if(type === 'array') {newArray = JSON.parse(myArray)}
+    newArray.forEach((el) => {
+      if (el && el !== NaN) {
+        object.push(el)
+      }
+    })
+      console.log('Convertido', object)
+    this.setState({[name]: object})
+  }
+} catch (error) {
+  console.log(`No se pudo cargar ${error}`)
+} finally {
+}
+}
+
+limpiar = async(name) => {
+  try {
+    await AsyncStorage.removeItem(`@${name}`)
+  } catch(e) {
+      console.log(`No se pudo limpiar ${e}`)
+  }
+  console.log('Limpiado.')
 }
 
 upload() {
@@ -129,6 +176,7 @@ console.log('macAddress', macaddress)
 
     })
     .then(newLocationArray => {
+        this.limpiar('locationArray');
       console.log(
         `Transaction successfully committed.`
       );
@@ -144,8 +192,9 @@ if (false) {
 }
 
 render() {
+  console.log('locatinArray', this.state.locationArray.length)
   let numLoc = 0;
-const { location } = this.state;
+const { location, locationArray } = this.state;
 if (location !== '') {
 return (
        <View style={styles.container}>
@@ -153,8 +202,7 @@ return (
            style={styles.map}
            region={location}
          >
-         {this.state.locationArray.map(marker => {
-           console.log('marker1', marker)
+         {locationArray.map(marker => {
            if (marker && marker !== NaN) {
              return (
     <Marker
@@ -166,12 +214,21 @@ return (
   );
   }})}
           </MapView>
+          <View>
+          <Button onPress={() => this.upload()}>
+          Cargar info
+          </Button>
+          </View>
        </View>
     );
   }
   return (
          <View style={styles.container}>
-
+         <View>
+         <Button onPress={() => this.upload()}>
+         Cargar info
+         </Button>
+         </View>
          </View>
       );
   }

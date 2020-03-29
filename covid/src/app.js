@@ -7,7 +7,7 @@ import reducers from './reducers';
 import Nav from './components/navigator';
 import 'react-native-gesture-handler';
 import { Notifications } from 'react-native-notifications';
-//import codePush from "react-native-code-push";
+import codePush from "react-native-code-push";
 
 const AsyncStorage = require('react-native').AsyncStorage;
 
@@ -19,8 +19,6 @@ class App extends Component {
 
   componentWillMount() {
     console.disableYellowBox = true;
-      Parse.initialize('US6Z8wCHUWHj23MTwRiHzecUhzRUPDCMqVKTWxbA',
-     '4kSMGxSabFsPrjKgQgJapYMpy84zKKPjrumTn8Ha');
 /*
      Notifications.postLocalNotification({
 
@@ -51,8 +49,8 @@ const updateDialogOptions = {
         optionalInstallButtonLabel: "Sí",
         mandatoryUpdateMessage: "Se instalará una nueva actualización",
     };
-//const codePushOptions = { checkFrequency: codePush.CheckFrequency.ON_APP_RESUME, updateDialog: updateDialogOptions, installMode: codePush.InstallMode.IMMEDIATE };
+const codePushOptions = { checkFrequency: codePush.CheckFrequency.ON_APP_RESUME, updateDialog: updateDialogOptions, installMode: codePush.InstallMode.IMMEDIATE };
 
-//App = codePush(codePushOptions)(App);
+App = codePush(codePushOptions)(App);
 
 export default App;

@@ -33,7 +33,9 @@ export default class Maps extends Component {
 
         this.state={
       location: '',
-      locationArray: []
+      locationArray: [],
+      localLocArray: [],
+      cloudLocArray: []
       }
     }
 
@@ -72,14 +74,13 @@ export default class Maps extends Component {
 
 cargarUbicaciones(address) {
 
-  this.cargar('locationArray', 'array');
+  this.cargar('localLocArray', 'array');
   const ref = firebase.firestore().collection('ubicaciones').doc(address);
 
   ref.get().then((doc) => {
     if (doc.exists) {
-        const cloudArray = doc.data().locationArray;
-        locationArray = [...cloudArray, ...this.state.locationArray];
-        this.setState({ locationArray })
+        const cloudLocArray = doc.data().cloudLocArray;
+        this.setState({ cloudLocArray })
 
     } else {
         // doc.data() will be undefined in this case
@@ -104,17 +105,17 @@ tick() {
 }
 
 tock() {
-  let {locationArray, location} = this.state;
-  if(Array.isArray(locationArray)) {
+  let {localLocArray, location} = this.state;
+  if(Array.isArray(localLocArray)) {
       if (location && location !== NaN) {
-      locationArray.push(location)
+      localLocArray.push(location)
     }
   } else {
-  locationArray = new Array()
-  locationArray.push(location)
+  localLocArray = new Array()
+  localLocArray.push(location)
 }
-this.guardar('locationArray',locationArray, 'array')
-this.setState({locationArray});
+this.guardar('localLocArray',localLocArray, 'array')
+this.setState({localLocArray});
 }
 
 guardar = async(name, value, type) => {
@@ -159,11 +160,27 @@ limpiar = async(name) => {
       console.log(`No se pudo limpiar ${e}`)
   }
   console.log('Limpiado.')
+  this.setState({ [name]: []})
+}
+
+joinLocationArrays() {
+
+  const{ localLocArray, cloudLocArray } = this.state;
+  console.log('cloud', cloudLocArray.length)
+console.log('localArray',localLocArray.length)
+  let locationArray = [];
+if((cloudLocArray && cloudLocArray !== []) && (localLocArray && localLocArray !== [])) { locationArray = [...cloudLocArray, ...localLocArray] }
+else if(!cloudLocArray || cloudLocArray === [] ) { locationArray = localLocArray }
+else if(!localLocArray || localLocArray === []) { locationArray = cloudLocArray }
+console.log('locatArray',locationArray.length)
+  return locationArray;
 }
 
 upload() {
-  const { locationArray, macaddress } = this.state
-console.log('macAddress', macaddress)
+  const { macaddress } = this.state
+
+  const locationArray = this.joinLocationArrays();
+
   const ref = firebase.firestore().collection('ubicaciones').doc(macaddress);
 
   firebase
@@ -172,11 +189,13 @@ console.log('macAddress', macaddress)
       const doc = await transaction.get(ref);
 
 
-      transaction.set(ref, { locationArray });
+      transaction.set(ref, { cloudLocArray: locationArray });
 
     })
-    .then(newLocationArray => {
-        this.limpiar('locationArray');
+    .then(() => {
+        this.limpiar('localLocArray');
+        console.log('newLoc', locationArray)
+        this.setState({ cloudLocArray: locationArray })
       console.log(
         `Transaction successfully committed.`
       );
@@ -186,15 +205,17 @@ console.log('macAddress', macaddress)
     });
 
 if (false) {
-  this.setState({ locationArray: [] })
 }
 
 }
 
 render() {
-  console.log('locatinArray', this.state.locationArray.length)
-  let numLoc = 0;
-const { location, locationArray } = this.state;
+
+
+const { location } = this.state;
+
+const locationArray = this.joinLocationArrays();
+
 if (location !== '') {
 return (
        <View style={styles.container}>

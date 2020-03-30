@@ -1,6 +1,6 @@
 import firebase from 'react-native-firebase';
 import React, { Component } from 'react';
-import {StatusBar, StyleSheet, View, Text } from 'react-native';
+import {StatusBar, StyleSheet, View, Text, FlatList, Alert } from 'react-native';
 import { getUniqueId, getManufacturer, getMacAddress } from 'react-native-device-info';
 import GetLocation from 'react-native-get-location';
 import MapView, { Marker } from 'react-native-maps';
@@ -25,7 +25,7 @@ import { Card, CardSection, Input, Button, Spinner, Header, DropInput } from './
 export default class Maps extends Component {
 
   static navigationOptions = {
-    title: 'Maps',
+    title: 'Mapa',
   };
 
     constructor () {
@@ -53,8 +53,8 @@ export default class Maps extends Component {
       this.state.macaddress = mac
       this.cargarUbicaciones(mac)
 });
-    this.interval = setInterval(() => this.tick(), 1000);
-    this.interval2 = setInterval(() => this.tock(), 5000);
+    this.interval = setInterval(() => this.tick(), 10000);
+    this.interval2 = setInterval(() => this.tock(), 50000);
     GetLocation.getCurrentPosition({
     enableHighAccuracy: true,
     timeout: 15000,
@@ -99,7 +99,7 @@ tick() {
     }).then((location, state) => {
       location.latitudeDelta = 0.015;
       location.longitudeDelta = 0.0121;
-
+      console.log('accuracy', location.accuracy)
       this.setState({location});
     })
 }
@@ -166,14 +166,13 @@ limpiar = async(name) => {
 joinLocationArrays() {
 
   const{ localLocArray, cloudLocArray } = this.state;
-  console.log('cloud', cloudLocArray.length)
-console.log('localArray',localLocArray.length)
   let locationArray = [];
 if((cloudLocArray && cloudLocArray !== []) && (localLocArray && localLocArray !== [])) { locationArray = [...cloudLocArray, ...localLocArray] }
 else if(!cloudLocArray || cloudLocArray === [] ) { locationArray = localLocArray }
 else if(!localLocArray || localLocArray === []) { locationArray = cloudLocArray }
-console.log('locatArray',locationArray.length)
   return [locationArray, cloudLocArray, localLocArray];
+
+
 }
 
 upload() {
@@ -193,9 +192,15 @@ upload() {
 
     })
     .then(() => {
+      Alert.alert(
+        '¡Gracias!',
+        'Gracias por compartir tu información. ¡Recuerda que este proyecto lo hacemos todos!',
+        [{ text: 'Ok', onPress: () => aceptarPrivacidad() }],
+        { cancelable: false }
+      );
         this.limpiar('localLocArray');
-        console.log('newLoc', locationArray)
         this.setState({ cloudLocArray: locationArray })
+
       console.log(
         `Transaction successfully committed.`
       );
@@ -262,14 +267,15 @@ return (
   );
   }})}
           </MapView>
-          <View>
+          <CardSection>
+          <View style={{ flex: 1}}>
+          <CardSection>
           <Button onPress={() => this.upload()}>
-          Cargar info
-          Ubicaciones locales: {localLocArray.length}
-          Ubicaciones en la nube: {cloudLocArray.length}
-          Ubicaciones mostradas: {locationArray.length}
+          Compartir información
           </Button>
+          </CardSection>
           </View>
+          </CardSection>
        </View>
     );
   }
@@ -277,7 +283,7 @@ return (
          <View style={styles.container}>
          <View>
          <Button onPress={() => this.upload()}>
-         Cargar info
+         Compartir información
          </Button>
          </View>
          </View>

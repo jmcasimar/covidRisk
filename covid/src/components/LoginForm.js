@@ -52,7 +52,7 @@ class LoginForm extends Component {
       Nunca se subirá la información de manera automática, siempre la acción será activada por el usuario y se le pedirá confirmación antes de subirla.
       El código fuente de la applicación es abierto y puede ser encontrado en la siguiente dirección: https://github.com/jmcasimar/covidRisk/. Cualquier persona que desee colaborar ya sea aportando ideas o el desarrollo de la app se puede contactar a los siguientes correos: jmcasimar@healtech.com.mx y klavierema@healtech.com.mx`;
 
-      let avisoPrivacidad = await AsyncStorage.getItem('avisoPrivacidad');
+      let avisoPrivacidad = await AsyncStorage.getItem('avisoPrivacidad')
       if(avisoPrivacidad === null) {
         Alert.alert(
           'Aviso de Privacidad:',

@@ -1,28 +1,26 @@
 import firebase from 'react-native-firebase';
 import React, { Component } from 'react';
-import {StatusBar, StyleSheet, View } from 'react-native';
+import {StatusBar, StyleSheet, View, Text } from 'react-native';
 import { getUniqueId, getManufacturer, getMacAddress } from 'react-native-device-info';
 import GetLocation from 'react-native-get-location';
 import MapView, { Marker } from 'react-native-maps';
 import AsyncStorage from '@react-native-community/async-storage';
-import QRCode from 'react-native-qrcode-svg';
-import { Card, CardSection } from '../common';
+import Parse from 'parse/react-native';
+import { Card, CardSection, Input, Button, Spinner, Header, DropInput } from './../common';
 
-const styles = StyleSheet.create({
- container: {
-   height: 400,
-   width: 400,
-   justifyContent: 'flex-end',
-   alignItems: 'center',
- },
- map: {
-   ...StyleSheet.absoluteFillObject,
- },
- qrStyle: {
-   justifyContent: 'center',
-   alignItems: 'center'
- }
-});
+
+    const styles = StyleSheet.create({
+     container: {
+       ...StyleSheet.absoluteFillObject,
+       height: 400,
+       width: 400,
+       justifyContent: 'flex-end',
+       alignItems: 'center',
+     },
+     map: {
+       ...StyleSheet.absoluteFillObject,
+     },
+    });
 
 export default class Maps extends Component {
 
@@ -35,7 +33,9 @@ export default class Maps extends Component {
 
         this.state={
       location: '',
-      locationArray: []
+      locationArray: [],
+      localLocArray: [],
+      cloudLocArray: []
       }
     }
 
@@ -55,7 +55,6 @@ export default class Maps extends Component {
 });
     this.interval = setInterval(() => this.tick(), 1000);
     this.interval2 = setInterval(() => this.tock(), 5000);
-    this.interval3 = setInterval(() => this.upload(), 10000);
     GetLocation.getCurrentPosition({
     enableHighAccuracy: true,
     timeout: 15000,
@@ -74,19 +73,15 @@ export default class Maps extends Component {
 }
 
 cargarUbicaciones(address) {
+
+  this.cargar('localLocArray', 'array');
   const ref = firebase.firestore().collection('ubicaciones').doc(address);
 
   ref.get().then((doc) => {
     if (doc.exists) {
-        const locationArray = doc.data().locationArray;
-        console.log('queryarray', locationArray)
-        this.setState({locationArray})
-        const ref1 = firebase.firestore().collection('ubicaciones').where('riesgo', '==', 60);
-        ref1.get().then((doc1) => {
-          console.log(doc1, 'DOC TEST');
-        }).catch(function(error) {
-          console.log('PTM2', error);
-        });
+        const cloudLocArray = doc.data().cloudLocArray;
+        this.setState({ cloudLocArray })
+
     } else {
         // doc.data() will be undefined in this case
         console.log("No such document!");
@@ -94,7 +89,6 @@ cargarUbicaciones(address) {
 }).catch(function(error) {
     console.log("Error getting document:", error);
 });
-
 }
 
 
@@ -111,22 +105,82 @@ tick() {
 }
 
 tock() {
-  let {locationArray, location} = this.state;
-  if(Array.isArray(locationArray)) {
-
-    locationArray.push(location)
+  let {localLocArray, location} = this.state;
+  if(Array.isArray(localLocArray)) {
+      if (location && location !== NaN) {
+      localLocArray.push(location)
+    }
   } else {
-  locationArray = new Array()
-  locationArray.push(location)
+  localLocArray = new Array()
+  localLocArray.push(location)
+}
+this.guardar('localLocArray',localLocArray, 'array')
+this.setState({localLocArray});
 }
 
-this.setState({locationArray});
+guardar = async(name, value, type) => {
+  let object = value;
+  if (type === 'array') {object = JSON.stringify(value)}
+  try {
+  await AsyncStorage.setItem(`@${name}`, object);
+} catch (error) {
+  console.log('Error')
+} finally {
+  console.log(`Guardado ${type} ${name} ${object.length}`)
+}
+}
 
+cargar = async(name, type) => {
+  console.log('cargando')
+try {
+  const myArray = await AsyncStorage.getItem(`@${name}`);
+  console.log('leido', myArray)
+  if (myArray !== null) {
+    let object = []
+    let newArray = myArray;
+    if(type === 'array') {newArray = JSON.parse(myArray)}
+    newArray.forEach((el) => {
+      if (el && el !== NaN) {
+        object.push(el)
+      }
+    })
+      console.log('Convertido', object)
+    this.setState({[name]: object})
+  }
+} catch (error) {
+  console.log(`No se pudo cargar ${error}`)
+} finally {
+}
+}
+
+limpiar = async(name) => {
+  try {
+    await AsyncStorage.removeItem(`@${name}`)
+  } catch(e) {
+      console.log(`No se pudo limpiar ${e}`)
+  }
+  console.log('Limpiado.')
+  this.setState({ [name]: []})
+}
+
+joinLocationArrays() {
+
+  const{ localLocArray, cloudLocArray } = this.state;
+  console.log('cloud', cloudLocArray.length)
+console.log('localArray',localLocArray.length)
+  let locationArray = [];
+if((cloudLocArray && cloudLocArray !== []) && (localLocArray && localLocArray !== [])) { locationArray = [...cloudLocArray, ...localLocArray] }
+else if(!cloudLocArray || cloudLocArray === [] ) { locationArray = localLocArray }
+else if(!localLocArray || localLocArray === []) { locationArray = cloudLocArray }
+console.log('locatArray',locationArray.length)
+  return [locationArray, cloudLocArray, localLocArray];
 }
 
 upload() {
-  const { locationArray, macaddress } = this.state
-console.log('macAddress', macaddress)
+  const { macaddress } = this.state
+
+  const [locationArray, cloudLocArray, localLocArray] = this.joinLocationArrays();
+
   const ref = firebase.firestore().collection('ubicaciones').doc(macaddress);
 
   firebase
@@ -135,10 +189,13 @@ console.log('macAddress', macaddress)
       const doc = await transaction.get(ref);
 
 
-      transaction.set(ref, { locationArray });
+      transaction.set(ref, { cloudLocArray: locationArray });
 
     })
-    .then(newLocationArray => {
+    .then(() => {
+        this.limpiar('localLocArray');
+        console.log('newLoc', locationArray)
+        this.setState({ cloudLocArray: locationArray })
       console.log(
         `Transaction successfully committed.`
       );
@@ -148,13 +205,16 @@ console.log('macAddress', macaddress)
     });
 
 if (false) {
-  this.setState({ locationArray: [] })
 }
 
 }
 
 render() {
+
+
 const { location } = this.state;
+
+const [locationArray, cloudLocArray, localLocArray] = this.joinLocationArrays();
 
 if (location !== '') {
   let qrInfo = 'tos:';
@@ -185,35 +245,41 @@ if (location !== '') {
   qrInfo += this.state.contactoPacientePositivo;
 
 return (
-  <View>
-    <View style={styles.container}>
-       <MapView
-         style={styles.map}
-         region={location}
-       >
-       {this.state.locationArray.map(marker => (
-       <Marker
-       coordinate={{
-         latitude: location.latitude,
-         longitude: location.longitude
-       }}
-       />
-     ))}
-     <MapView.Heatmap points={[{latitude: location.latitude, longitude: location.longitude, weight: 100},
-                               {latitude: location.latitude+0.1, longitude: location.longitude+.1, weight: 100}]}
-                       opacity={1}
-                       radius={20}
-                       maxIntensity={100}
-                       gradientSmoothing={10}
-                       heatmapMode={"POINTS_DENSITY"}/>
-        </MapView>
-    </View>
-  </View>
+       <View style={styles.container}>
+         <MapView
+           style={styles.map}
+           region={location}
+         >
+         {locationArray.map(marker => {
+           if (marker && marker !== NaN) {
+             return (
+    <Marker
+    coordinate={{
+      latitude: marker.latitude,
+      longitude: marker.longitude
+    }}
+    />
+  );
+  }})}
+          </MapView>
+          <View>
+          <Button onPress={() => this.upload()}>
+          Cargar info
+          Ubicaciones locales: {localLocArray.length}
+          Ubicaciones en la nube: {cloudLocArray.length}
+          Ubicaciones mostradas: {locationArray.length}
+          </Button>
+          </View>
+       </View>
     );
   }
   return (
          <View style={styles.container}>
-
+         <View>
+         <Button onPress={() => this.upload()}>
+         Cargar info
+         </Button>
+         </View>
          </View>
       );
   }

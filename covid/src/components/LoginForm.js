@@ -144,7 +144,7 @@ class LoginForm extends Component {
     storeData = async () => {
       try {
         await AsyncStorage.setItem('encuesta', 'si');
-
+        this.setState({ encuesta:'si' });
         if (this.state.tos){ await AsyncStorage.setItem('tos', 'si'); }
         else { await AsyncStorage.setItem('tos', 'no'); }
 

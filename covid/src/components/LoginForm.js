@@ -62,6 +62,9 @@ class LoginForm extends Component {
         );
       }
 
+      let encuesta = await AsyncStorage.getItem('encuesta')
+      if(encuesta === null) { encuesta = 'no'; }
+
       let tos = await AsyncStorage.getItem('tos')
       if(tos === null) { tos = 'no'; }
 
@@ -114,7 +117,8 @@ class LoginForm extends Component {
         fatiga,
         viajadoRecientemente,
         contactoAreaInfectada,
-        contactoPacientePositivo
+        contactoPacientePositivo,
+        encuesta
       });
       console.log('AsyncStorage info obtenida', this.setState());
     } catch(e) {
@@ -139,6 +143,8 @@ class LoginForm extends Component {
   onContinuarPress() {
     storeData = async () => {
       try {
+        await AsyncStorage.setItem('encuesta', 'si');
+
         if (this.state.tos){ await AsyncStorage.setItem('tos', 'si'); }
         else { await AsyncStorage.setItem('tos', 'no'); }
 
@@ -248,13 +254,11 @@ class LoginForm extends Component {
   render() {
     console.log(this.state);
 
-    const { requestAgain, edad, sexo, tos, escalofrios, diarrea, garganta,
+    const { requestAgain, encuesta, edad, sexo, tos, escalofrios, diarrea, garganta,
     malestarGeneral, dolorCabeza, fiebre, perdidaOlfato, dificultadRespirar,
     fatiga, viajadoRecientemente, contactoAreaInfectada, contactoPacientePositivo } = this.state;
 
-    if( requestAgain===false && tos!=='' && escalofrios!=='' && diarrea!=='' && garganta!=='' &&
-      malestarGeneral!=='' && dolorCabeza!=='' && fiebre!=='' && perdidaOlfato!=='' && dificultadRespirar!=='' &&
-      fatiga!=='' && viajadoRecientemente!=='' && contactoAreaInfectada!=='' && contactoPacientePositivo!=='' ){
+    if( requestAgain===false && encuesta==='si'){
         let qrInfo = 'tos:';
         qrInfo += this.state.tos;
         qrInfo += ',escalofrios:';
